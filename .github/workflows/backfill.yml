@@ -1,0 +1,36 @@
+name: backfill
+on:
+  workflow_dispatch:
+  push:
+    paths: ['backfill.trigger']
+  schedule:
+    - cron: '0 23 1,15 * *'   # 매월 1·15일 08:00 KST 재무제표 갱신
+permissions:
+  contents: write
+concurrency: {group: data-commit, cancel-in-progress: false}
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: financial statements
+        run: python scripts/collect_fin.py 2>&1 | tail -c 4000 | tee data/_log_fin.txt
+        env: {DART_API_KEY: '${{ secrets.DART_API_KEY }}', ECOS_API_KEY: '${{ secrets.ECOS_API_KEY }}', PYTHONPATH: scripts, FULL: "${{ github.event_name == 'push' && '1' || '0' }}"}
+        continue-on-error: true
+      - name: disclosure history
+        if: github.event_name == 'push'
+        run: python scripts/collect_events.py 2>&1 | tail -c 4000 | tee data/_log_events_back.txt
+        env: {DART_API_KEY: '${{ secrets.DART_API_KEY }}', ECOS_API_KEY: '${{ secrets.ECOS_API_KEY }}', PYTHONPATH: scripts, BACKFILL: '1'}
+        continue-on-error: true
+      - name: commit
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git commit -m "data: backfill $(date -u +%Y-%m-%dT%H:%MZ)" || exit 0
+          git pull --rebase -X ours origin main || true
+          git push
