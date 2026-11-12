@@ -26,3 +26,18 @@ arr = json.loads(t)
 epu = [[str(r['date']), round(float(r['한국 EPU 지수']), 2)] for r in arr if r.get('한국 EPU 지수') not in (None, '')]
 save('data/epu.json', {'updated': res['updated'], 'source': 'KDI 경제교육·정보센터 경제불확실성지수', 'epu': epu})
 print('ecos', {k: (len(v), v[-1] if v else None) for k, v in res.items() if isinstance(v, list)}, 'epu', epu[-2:])
+# ---- VKOSPI (코스피200 변동성지수): KRX 사이트는 로그인이 필요해 investing.com 공개 API로 받음. 실패해도 다른 데이터에는 영향 없음
+try:
+    H = {'domain-id': 'www', 'Referer': 'https://www.investing.com/', 'Accept': 'application/json'}
+    s = json.loads(get('https://api.investing.com/api/search/v2/search?q=KOSPI%20Volatility', headers=H, tries=2))
+    cands = [q for q in s.get('quotes', []) if 'volatility' in (q.get('description', '') + q.get('name', '')).lower() and 'kospi' in (q.get('description', '') + q.get('name', '')).lower()]
+    iid = cands[0]['id'] if cands else None
+    vk = []
+    if iid:
+        y0 = (today.replace(day=1) - datetime.timedelta(days=800)).isoformat()
+        h = json.loads(get(f'https://api.investing.com/api/financialdata/historical/{iid}?start-date={y0}&end-date={today.isoformat()}&time-frame=Daily&add-missing-rows=false', headers=H, tries=2))
+        vk = sorted([[r['rowDateTimestamp'][:10], float(r['last_closeRaw'])] for r in h.get('data', [])])
+    save('data/vkospi.json', {'updated': res['updated'], 'source': 'investing.com KOSPI Volatility (KSVKOSPI)', 'id': iid, 'cands': [[q.get('id'), q.get('description'), q.get('symbol')] for q in cands[:3]], 'vkospi': vk})
+    print('vkospi', iid, len(vk), vk[-2:])
+except Exception as e:
+    print('vkospi failed', repr(e)[:200])
