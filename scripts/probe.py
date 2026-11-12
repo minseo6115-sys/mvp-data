@@ -3,7 +3,7 @@ import os, json, io, zipfile, time, traceback, urllib.request, urllib.parse
 OUT = 'data/_probe'; os.makedirs(OUT, exist_ok=True)
 DART = os.environ.get('DART_API_KEY', ''); ECOS = os.environ.get('ECOS_API_KEY', '')
 log = {}
-def get(url, binary=False, headers=None, data=None, timeout=60):
+def get(url, binary=False, headers=None, data=None, timeout=25):
     req = urllib.request.Request(url, data=data, headers={'User-Agent': 'Mozilla/5.0', **(headers or {})})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         b = r.read(); return b if binary else b.decode('utf-8', 'replace')
