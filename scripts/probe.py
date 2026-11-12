@@ -14,7 +14,7 @@ def mask(s):
     for k in (ECOS, DART):
         if k: s = s.replace(k, '***')
     return s
-log['env'] = {'DART_len': len(DART), 'ECOS_len': len(ECOS), 'secret_names': sorted(json.loads(os.environ.get('SECRET_NAMES_JSON') or '{}').keys())}
+log['env'] = {'DART_len': len(DART), 'ECOS_len': len(ECOS)}
 
 # ---- ECOS: 통계표 목록에서 후보 검색
 def ecos_tables():
