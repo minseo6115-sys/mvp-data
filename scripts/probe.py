@@ -10,7 +10,11 @@ def get(url, binary=False, headers=None, data=None, timeout=60):
 def safe(name, fn):
     try: log[name] = fn()
     except Exception as e: log[name] = {'error': repr(e)[:500]}
-def mask(s): return s.replace(ECOS, '***').replace(DART, '***') if s else s
+def mask(s):
+    for k in (ECOS, DART):
+        if k: s = s.replace(k, '***')
+    return s
+log['env'] = {'DART_len': len(DART), 'ECOS_len': len(ECOS), 'secret_names': sorted(json.loads(os.environ.get('SECRET_NAMES_JSON') or '{}').keys())}
 
 # ---- ECOS: 통계표 목록에서 후보 검색
 def ecos_tables():
@@ -69,11 +73,26 @@ def pyk_idx():
     return {'tail': df.tail(3).reset_index().astype(str).values.tolist()}
 safe('pykrx_vkospi', pyk_idx)
 # ---- KDI EPU / Baker-Bloom-Davis Korea EPU
-safe('kdi_epu', lambda: get('https://eiec.kdi.re.kr/bigdata/index.do')[:4000])
+def kdi():
+    t = get('https://eiec.kdi.re.kr/bigdata/index.do'); open(f'{OUT}/kdi_epu.html', 'w').write(t); return len(t)
+safe('kdi_epu', kdi)
+def naver_frgn():
+    t = get('https://finance.naver.com/item/frgn.naver?code=005930&page=1', headers={'Referer': 'https://finance.naver.com/'})
+    b = get('https://finance.naver.com/item/frgn.naver?code=005930&page=1', binary=True)
+    try: t = b.decode('euc-kr')
+    except Exception: t = b.decode('cp949', 'replace')
+    open(f'{OUT}/naver_frgn.html', 'w').write(t); return len(t)
+safe('naver_frgn', naver_frgn)
+def naver_vk():
+    b = get('https://m.stock.naver.com/api/index/VKOSPI/price?pageSize=5&page=1', binary=True); return b.decode('utf-8','replace')[:1500]
+safe('naver_vkospi_api', naver_vk)
+def naver_idx():
+    return get('https://api.stock.naver.com/index/VKOSPI/basic')[:1500]
+safe('naver_vkospi_basic', naver_idx)
 def bbd():
     b = get('https://www.policyuncertainty.com/media/Korea_Policy_Uncertainty_Data.xlsx', binary=True)
     import pandas as pd
-    df = pd.read_excel(io.BytesIO(b)); return {'cols': list(map(str, df.columns)), 'tail': df.dropna().tail(4).astype(str).values.tolist()}
+    df = pd.read_excel(io.BytesIO(b)); df = df.iloc[:, :2].dropna(); return {'cols': list(map(str, df.columns)), 'tail': df.tail(4).astype(str).values.tolist()}
 safe('bbd_korea_epu', bbd)
 # ---- investing / stooq VKOSPI 대안
 safe('stooq_vkospi', lambda: get('https://stooq.com/q/d/l/?s=^vkospi&i=d')[:500])

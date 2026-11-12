@@ -18,6 +18,7 @@ jobs:
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
           ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
+          SECRET_NAMES_JSON: ${{ toJSON(secrets) }}
       - name: commit
         run: |
           git config user.name "github-actions[bot]"
