@@ -13,7 +13,8 @@ for y in years:
     for rc, tag in REP:
         for i in range(0, len(U), 100):
             chunk = U[i:i + 100]
-            t = get(f'https://opendart.fss.or.kr/api/fnlttMultiAcnt.json?crtfc_key={DART}&corp_code={",".join(cm[c] for c in chunk)}&bsns_year={y}&reprt_code={rc}')
+            try: t = get(f'https://opendart.fss.or.kr/api/fnlttMultiAcnt.json?crtfc_key={DART}&corp_code={",".join(cm[c] for c in chunk)}&bsns_year={y}&reprt_code={rc}')
+            except Exception as e: print('err', y, tag, i, type(e).__name__); continue
             calls += 1; j = json.loads(t)
             if j.get('status') != '000': continue
             rows = {}

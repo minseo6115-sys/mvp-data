@@ -27,29 +27,44 @@ def classify(nm):
     return None
 cm = corp_map(); U = universe(); NM = names()
 prev = load('data/dart_events.json', {'events': {}})
-ev = prev.get('events', {}) if not BACK else {}
-bgn = '20190101' if BACK else (today - datetime.timedelta(days=40)).strftime('%Y%m%d')
+ev = prev.get('events', {})
+# BACKFILL: 2019년부터. 이미 받은 종목(done)은 건너뛰고, 실행 시간이 길어지면 중간 저장 후 종료 → 다음 실행이 이어서 받음
+done = set(prev.get('back_done', [])) if BACK else set()
+bgn0 = '20190101'
 end = today.strftime('%Y%m%d')
+T0 = time.time(); LIMIT = float(os.environ.get('TIME_LIMIT', '6600'))
 calls = 0
-for c in U:
+def dump():
+    save('data/dart_events.json', {'updated': datetime.datetime.utcnow().isoformat() + 'Z', 'source': 'DART 전자공시 OpenAPI (list.json)',
+                                   'rules': [[k, lab, d] for k, lab, d, _ in RULES], 'events': ev,
+                                   'back_done': sorted(done), 'back_complete': all(c in done for c in U if cm.get(c))})
+for n, c in enumerate(U):
     cc = cm.get(c)
     if not cc: continue
+    if BACK and c in done: continue
+    if BACK and time.time() - T0 > LIMIT: print('time limit, stop at', n); break
+    bgn = bgn0 if BACK else (today - datetime.timedelta(days=40)).strftime('%Y%m%d')
     got = {e['no']: e for e in ev.get(c, [])}
-    page = 1
+    page = 1; ok = True
     while True:
-        t = get(f'https://opendart.fss.or.kr/api/list.json?crtfc_key={DART}&corp_code={cc}&bgn_de={bgn}&end_de={end}&page_no={page}&page_count=100')
+        try: t = get(f'https://opendart.fss.or.kr/api/list.json?crtfc_key={DART}&corp_code={cc}&bgn_de={bgn}&end_de={end}&page_no={page}&page_count=100', timeout=20, tries=3)
+        except Exception as e: print('err', c, repr(e)[:80]); ok = False; break
         calls += 1; j = json.loads(t)
+        if j.get('status') == '020': print('rate limit'); ok = False; break
         if j.get('status') not in ('000',): break
         for r in j.get('list', []):
             k = classify(r['report_nm'])
             if k: got[r['rcept_no']] = {'no': r['rcept_no'], 'd': r['rcept_dt'], 'k': k[0], 'nm': r['report_nm'].strip()[:60], 'dir': k[2]}
         if page >= int(j.get('total_page', 1)): break
-        page += 1; time.sleep(0.15)
+        page += 1; time.sleep(0.1)
     ev[c] = sorted(got.values(), key=lambda e: e['d'])
-    time.sleep(0.1)
-save('data/dart_events.json', {'updated': datetime.datetime.utcnow().isoformat() + 'Z', 'source': 'DART 전자공시 OpenAPI (list.json)',
-                               'rules': [[k, lab, d] for k, lab, d, _ in RULES], 'events': ev})
-print('dart calls', calls, 'events', sum(len(v) for v in ev.values()))
+    if BACK and ok: done.add(c)
+    if BACK and n % 25 == 0: dump(); print('progress', n, len(done), 'calls', calls, int(time.time() - T0), 's', flush=True)
+    if not ok and j.get('status') == '020': break
+    time.sleep(0.05)
+dump()
+print('dart calls', calls, 'events', sum(len(v) for v in ev.values()), 'back_done', len(done))
+if BACK: raise SystemExit
 # ---- 뉴스 리스크 (최근 14일)
 NEWS = [
  ('owner', '오너·경영진 리스크', r'구속|기소|영장|압수수색|검찰|횡령|배임|갑질|성추문|불륜|스캔들|마약|도박|폭행|사법리스크|오너리스크'),

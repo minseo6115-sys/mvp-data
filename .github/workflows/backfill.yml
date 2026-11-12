@@ -7,6 +7,7 @@ on:
     - cron: '0 23 1,15 * *'   # 매월 1·15일 08:00 KST 재무제표 갱신
 permissions:
   contents: write
+  actions: write
 concurrency: {group: data-commit, cancel-in-progress: false}
 jobs:
   backfill:
@@ -20,10 +21,9 @@ jobs:
         run: python scripts/collect_fin.py 2>&1 | tail -c 4000 | tee data/_log_fin.txt
         env: {DART_API_KEY: '${{ secrets.DART_API_KEY }}', ECOS_API_KEY: '${{ secrets.ECOS_API_KEY }}', PYTHONPATH: scripts, FULL: "${{ github.event_name == 'push' && '1' || '0' }}"}
         continue-on-error: true
-      - name: disclosure history
-        if: github.event_name == 'push'
+      - name: disclosure history (resumable)
         run: python scripts/collect_events.py 2>&1 | tail -c 4000 | tee data/_log_events_back.txt
-        env: {DART_API_KEY: '${{ secrets.DART_API_KEY }}', ECOS_API_KEY: '${{ secrets.ECOS_API_KEY }}', PYTHONPATH: scripts, BACKFILL: '1'}
+        env: {DART_API_KEY: '${{ secrets.DART_API_KEY }}', ECOS_API_KEY: '${{ secrets.ECOS_API_KEY }}', PYTHONPATH: scripts, BACKFILL: '1', TIME_LIMIT: '6000'}
         continue-on-error: true
       - name: commit
         if: always()
@@ -34,3 +34,8 @@ jobs:
           git commit -m "data: backfill $(date -u +%Y-%m-%dT%H:%MZ)" || exit 0
           git pull --rebase -X ours origin main || true
           git push
+      - name: continue if disclosure history is not complete
+        if: always()
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: |
+          if python -c "import json,sys;sys.exit(0 if json.load(open('data/dart_events.json')).get('back_complete') else 1)"; then echo complete; else gh workflow run backfill.yml --ref main; fi
