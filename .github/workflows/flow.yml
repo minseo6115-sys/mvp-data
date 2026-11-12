@@ -5,7 +5,7 @@ on:
     paths: ['scripts/collect_flow.py', '.github/workflows/flow.yml']
 permissions:
   contents: write
-concurrency: {group: data-commit, cancel-in-progress: false}
+concurrency: {group: flow, cancel-in-progress: true}
 jobs:
   flow:
     runs-on: ubuntu-latest
