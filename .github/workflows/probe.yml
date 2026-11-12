@@ -2,7 +2,7 @@ name: probe-sources
 on:
   workflow_dispatch:
   push:
-    paths: ['scripts/probe.py', '.github/workflows/probe.yml']
+    paths: ['scripts/probe*.py', '.github/workflows/probe.yml']
 permissions:
   contents: write
 jobs:
@@ -14,7 +14,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
       - run: mkdir -p data/_probe && pip install pandas openpyxl pykrx > /dev/null
-      - run: python scripts/probe.py 2>&1 | tail -c 20000 > data/_probe/run.log || true
+      - run: python scripts/probe2.py 2>&1 | tail -c 20000 > data/_probe/run2.log || true
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
           ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
