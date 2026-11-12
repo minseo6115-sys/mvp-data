@@ -1,6 +1,8 @@
 name: flow-collect
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '10 10 * * 1-5'   # 평일 19:10 KST 증분
   push:
     paths: ['scripts/collect_flow.py', '.github/workflows/flow.yml']
 permissions:
@@ -9,13 +11,13 @@ concurrency: {group: flow, cancel-in-progress: true}
 jobs:
   flow:
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 280
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
       - run: python scripts/collect_flow.py 2>&1 | tail -c 4000 | tee data/_log_flow.txt
-        env: {PYTHONPATH: scripts, TEST: '1'}
+        env: {PYTHONPATH: scripts}
         continue-on-error: true
       - name: commit
         if: always()
