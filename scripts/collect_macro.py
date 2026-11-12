@@ -20,6 +20,27 @@ res['cpi_kr_m'] = ecos('901Y009', 'M', '201701', ym, '0')
 for key, item in [('kospi', '0001000'), ('kosdaq', '0089000'), ('frgn_kospi', '0030000'), ('frgn_kosdaq', '0113000')]:
     res[key] = ecos('802Y001', 'D', '20180101', d8, item)
 save('data/ecos.json', res)
+# ---- 환율 연구용 장기 시계열(2010~): 원/달러, KOSPI, 국고채3년, 주요국 정책금리·CPI(국제피셔/금리평가)
+lng = {'updated': res['updated'], 'source': '한국은행 ECOS Open API'}
+for key, args in [('usdkrw', ('731Y001', 'D', '20100101', d8, '0000001')), ('kospi', ('802Y001', 'D', '20100101', d8, '0001000')),
+                  ('ktb3y', ('817Y002', 'D', '20100101', d8, '010200000')), ('frgn_kospi', ('802Y001', 'D', '20100101', d8, '0030000'))]:
+    try: lng[key] = ecos(*args)
+    except Exception as e: lng[key] = []; print('long fail', key, type(e).__name__)
+items = {}
+for code in ('902Y006', '902Y008', '902Y021'):
+    try:
+        t = get(f'https://ecos.bok.or.kr/api/StatisticItemList/{ECOS}/json/kr/1/200/{code}')
+        rows = json.loads(t).get('StatisticItemList', {}).get('row', [])
+        items[code] = [[r.get('ITEM_CODE'), r.get('ITEM_NAME'), r.get('CYCLE')] for r in rows]
+    except Exception as e: items[code] = repr(e)[:80]
+lng['items'] = items
+for code, store in (('902Y006', 'policy'), ('902Y008', 'cpi')):
+    for it in (items.get(code) or []):
+        if isinstance(it, list) and it[1] in ('미국', '한국', 'United States', 'Korea') and it[2] == 'M':
+            try: lng[f'{store}_{it[0]}'] = ecos(code, 'M', '201001', ym, it[0])
+            except Exception as e: pass
+save('data/ecos_long.json', lng)
+print('long', {k: len(v) for k, v in lng.items() if isinstance(v, list)})
 # KDI EPU
 t = get('https://eiec.kdi.re.kr/bigdata/epu.do?startDate=201301&endDate=' + ym, headers={'Referer': 'https://eiec.kdi.re.kr/bigdata/index.do', 'X-Requested-With': 'XMLHttpRequest'})
 arr = json.loads(t)
