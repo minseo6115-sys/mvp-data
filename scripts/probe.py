@@ -100,3 +100,4 @@ safe('stooq_vkospi', lambda: get('https://stooq.com/q/d/l/?s=^vkospi&i=d')[:500]
 txt = mask(json.dumps(log, ensure_ascii=False, indent=1))
 open(f'{OUT}/probe.json', 'w').write(txt)
 print(txt[:3000])
+# rerun 1794474615
