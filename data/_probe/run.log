@@ -4,36 +4,161 @@ Error occurred in get_index_ohlcv_by_date: Expecting value: line 1 column 1 (cha
 Error occurred in __fetch: Expecting value: line 1 column 1 (char 0)
 {
  "env": {
-  "DART_len": 0,
-  "ECOS_len": 0
+  "DART_len": 40,
+  "ECOS_len": 20
  },
  "ecos_tables": {
-  "n": 0,
-  "hits": []
+  "n": 844,
+  "hits": [
+   {
+    "STAT_CODE": "722Y001",
+    "STAT_NAME": "1.3.1. 한국은행 기준금리 및 여수신금리",
+    "CYCLE": "D"
+   },
+   {
+    "STAT_CODE": "0000000397",
+    "STAT_NAME": "1.5. 주식/채권/재정",
+    "CYCLE": null
+   },
+   {
+    "STAT_CODE": "0000000398",
+    "STAT_NAME": "1.5.1. 주식거래/주가지수",
+    "CYCLE": null
+   },
+   {
+    "STAT_CODE": "802Y001",
+    "STAT_NAME": "1.5.1.1. 주식시장(일)",
+    "CYCLE": "D"
+   },
+   {
+    "STAT_CODE": "901Y014",
+    "STAT_NAME": "1.5.1.2. 주식시장(월,년)",
+    "CYCLE": "M"
+   },
+   {
+    "STAT_CODE": "901Y055",
+    "STAT_NAME": "1.5.1.3. 투자자별 주식거래",
+    "CYCLE": "M"
+   },
+   {
+    "STAT_CODE": "0000000157",
+    "STAT_NAME": "2.5. 국제수지표",
+    "CYCLE": null
+   },
+   {
+    "STAT_CODE": "0000000158",
+    "STAT_NAME": "2.5.1. 국제수지",
+    "CYCLE": null
+   },
+   {
+    "STAT_CODE": "301Y013",
+    "STAT_NAME": "2.5.1.1. 국제수지",
+    "CYCLE": "M"
+   },
+   {
+    "STAT_CODE": "0000000176",
+    "STAT_NAME": "3. 환율/통관수출입/외환보유액",
+    "CYCLE": null
+   },
+   {
+    "STAT_CODE": "0000000177",
+    "STAT_NAME": "3.1. 환율",
+    "CYCLE": null
+   },
+   {
+    "STAT_CODE": "0000000178",
+    "STAT_NAME": "3.1.1. 일일환율",
+    "CYCLE": null
+   },
+   {
+    "STAT_CODE": "731Y001",
+    "STAT_NAME": "3.1.1.1. 주요국 통화의 대원화환율",
+    "CYCLE": "D"
+   },
+   {
+    "STAT_CODE": "731Y002",
+    "STAT_NAME": "3.1.1.2. 주요국 통화의 대미달러환율",
+    "CYCLE": "D"
+   },
+   {
+    "STAT_CODE": "731Y003",
+    "STAT_NAME": "3.1.1.3. 원화의 대미달러, 원화의 대위안/대엔 환율",
+    "CYCLE": "D"
+   },
+   {
+    "STAT_CODE": "0000000182",
+    "STAT_NAME": "3.1.2. 평균환율/기말환율",
+    "CYCLE": null
+   },
+   {
+    "STAT_CODE": "731Y004",
+    "STAT_NAME": "3.1.2.1. 주요국 통화의 대원화환율",
+    "CYCLE": "M"
+   },
+   {
+    "STAT_CODE": "731Y005",
+    "STAT_NAME": "3.1.2.2. 주요국 통화의 대미달러환율",
+    "CYCLE": "M"
+   },
+   {
+    "STAT_CODE": "731Y006",
+    "STAT_NAME": "3.1.2.3. 원화의 대미달러, 원화의 대위안/대엔 환율",
+    "CYCLE": "M"
+   },
+   {
+    "STAT_CODE": "901Y061",
+    "STAT_NAME": "3.4.2. 외국인직접투자",
+    "CYCLE": "Q"
+   },
+   {
+    "STAT_CODE": "0000000211",
+    "STAT_NAME": "4.2. 소비자물가지수(2020=100)",
+    "CYCLE": null
+   },
+   {
+    "STAT_CODE": "901Y009",
+    "STAT_NAME": "4.2.1. 소비자물가지수",
+    "CYCLE": "M"
+   },
+   {
+    "STAT_CODE": "901Y010",
+    "STAT_NAME": "4.2.2. 소비자물가지수(특수분류)",
+    "CYCLE": "M"
+   },
+   {
+    "STAT_CODE": "902Y008",
+    "STAT_NAME": "9.1.2.2. 국제 주요국 소비자물가지수",
+    "CYCLE": "M"
+   },
+   {
+    "STAT_CODE": "0000000443",
+    "STAT_NAME": "9.1.3. 국제수지/외환",
+    "CYCLE": null
+   },
+   {
+    "STAT_CODE": "0000000704",
+    "STAT_NAME": "9.2.3. 북한의 시장물가와 환율",
+    "CYCLE": null
+   },
+   {
+    "STAT_CODE": "252Y002",
+    "STAT_NAME": "9.2.3.2. 시장환율",
+    "CYCLE": "Q"
+   }
+  ]
  },
- "ecos_items_722Y001": [],
- "ecos_items_901Y009": [],
- "ecos_items_301Y013": [],
- "ecos_items_301Y017": [],
- "ecos_items_301Y014": [],
- "ecos_items_731Y001": [],
- "ecos_items_802Y001": [],
- "ecos_base_rate": {
-  "RESULT": {
-   "CODE": "INFO-100",
-   "MESSAGE": "인증키가 유효하지 않습니다. 인증키를 확인하십시오! 인증키가 없는 경우 인증키를 신청하십시오!"
-  }
- },
- "ecos_cpi": {
-  "RESULT": {
-   "CODE": "INFO-100",
-   "MESSAGE": "인증키가 유효하지 않습니다. 인증키를 확인하십시오! 인증키가 없는 경우 인증키를 신청하십시오!"
-  }
- },
- "dart_corp": {
-  "error": "BadZipFile('File is not a zip file')"
- },
- "dart_multi": {
-  "error": "FileNotFoundError(2, 'No such file or directory')"
- },
- "krx_vkospi": "<!DOCTYPE HTML>\n<html>\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">\n<title>한국거래소</title>\n<style>\n*{font-family:\"Malgun Gothic\"; font-size:1em}\nhtml, body, div, img, p, span {margin:0;padding:0}\nhtml {height:100%}\nbody {display:table; width:100%; height:100%; overflow:hidden}\n.wrap {display:table-cell; width:100%; height:100%;background:url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABkAAAAJNCAYAAABp3blqAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2RpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowQkJGREUxQUQzQUVFNTExQjRGRUEzNjc5NUFBNzQ4RCIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo2ODNGNjFCMEFFRDMxMUU1QTVDRkMwNEU3M0Y3RUFDOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo2ODNGNjFBRkFFRDMxMUU1QTVDRkMwNEU3M0Y3RUFDOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IFdpbmRvd3MiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDowQkJGREUxQUQzQUVFNTExQjRGRUEzNjc5NUFBNzQ4RCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDowQkJGREUxQUQzQUVFNTExQjRGRUEzNjc5NUFBNzQ4RCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PtnjWggACpD4SURBVHja7L1HsGZJeh12Mq/53fOuvOtqM9PTM4MxAAmQBBkCKRopKEUwKK20UIR22mmthRZSKIIKLrhRhDaUaBRBkZAAkQQoSACJMZgZDMb09Jiu7q7qLv+q6vnf3//em6k0X5r/dUvrqok8E9Xvvf9dkzfNrZrv5DmHSSmRkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJDwywSeuiAhISEhISEhISEhISEhISEhISEhISEh4ZcNiQBJSEhISEhISEhISEhISEhISEhISEhISPilQyJAEhISEhISEhISEhISEhISEhISEhISEhJ+6ZAIkISEhISEhISEhISEhISEhISEhISEhISEXzokAiQhISEhISEhISEhISEhISEhISEhISEh4ZcOiQBJSEhISEhISEhISEhISEhISEhISEhISPilQ566ICEhIeHVxDfvD81XKWHobKa+tOoHzphhtwUkhP6d+sPVL7n6jxT6eAmmjpH+Svo7Zs6X6j9C2M/0dTSEOj4zn4QzhLkl8z8zc6w01wZ9bo8xv0VrftLfcbqfvVqm70fH6za2IrQp020y7ZTquYQ5O7e3Mee27t5Rn0jVeMaZZ/e
+ "ecos_items_722Y001": [
+  {
+   "ITEM_CODE": "0101000",
+   "ITEM_NAME": "한국은행 기준금리",
+   "CYCLE": "A",
+   "START_TIME": "1999",
+   "END_TIME": "2025",
+   "GRP_NAME": "계정항목"
+  },
+  {
+   "ITEM_CODE": "0101000",
+   "ITEM_NAME": "한국은행 기준금리",
+   "CYCLE": "D",
+   "START_TIME": "19990506",
+   "END_TIM
