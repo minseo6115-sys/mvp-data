@@ -19,7 +19,7 @@ for y in years:
             if j.get('status') != '000': continue
             rows = {}
             for r in j['list']:
-                c = r['stock_code']; k = KEEP.get(r['account_nm'].strip())
+                c = r['stock_code']; k = KEEP.get(r['account_nm'].replace(' ', '').replace('(손실)', '').replace('법인세차감전순이익', '법인세차감전 순이익').strip())
                 if not k: continue
                 d = rows.setdefault((c, r['fs_div']), {'p': f'{y}{tag}', 'rc': r['rcept_no'][:8], 'end': r['thstrm_dt'][:10]})
                 is_flow = r['sj_div'] in ('IS', 'CIS')
