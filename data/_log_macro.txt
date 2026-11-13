@@ -1,3 +1,3 @@
-long {'usdkrw': 4167, 'kospi': 4150, 'ktb3y': 4166, 'frgn_kospi': 4150, 'policy_KR': 202, 'policy_US': 202, 'cpi_KR': 202, 'cpi_US': 200}
+long {'usdkrw': 4167, 'kospi': 4150, 'ktb3y': 4167, 'frgn_kospi': 4150, 'policy_KR': 202, 'policy_US': 202, 'cpi_KR': 202, 'cpi_US': 200}
 ecos {'bok_rate_m': (106, ['202610', 3.0]), 'bok_rate_d': (682, ['20261113', 3.0]), 'cpi_kr_m': (118, ['202610', 120.73]), 'kospi': (2174, ['20261112', 5342.73]), 'kosdaq': (2174, ['20261112', 696.53]), 'frgn_kospi': (2174, ['20261112', 3440.0]), 'frgn_kosdaq': (2174, ['20261112', -3519.0])} epu [['202609', 112.17], ['202610', 102.88]]
 vkospi None 0 []
