@@ -26,24 +26,30 @@ def classify(nm):
         if re.search(pat, nm.replace(' ', '')): return k, lab, d
     return None
 cm = corp_map(); U = universe(); NM = names()
-prev = load('data/dart_events.json', {'events': {}})
+# 파일 분리: 과거 전체 이력은 dart_events_hist.json(BACKFILL 실행만 씀), 최근 400일은 dart_events.json(매일 실행만 씀).
+# 두 실행이 같은 파일을 쓰면 늦게 끝난 쪽이 앞선 결과를 덮어쓴다(2026-11-12 이력 유실 원인).
+OUT = 'data/dart_events_hist.json' if BACK else 'data/dart_events.json'
+prev = load(OUT, {'events': {}})
 ev = prev.get('events', {})
 # BACKFILL: 2019년부터. 이미 받은 종목(done)은 건너뛰고, 실행 시간이 길어지면 중간 저장 후 종료 → 다음 실행이 이어서 받음
 done = set(prev.get('back_done', [])) if BACK else set()
+# 이력을 이미 다 받았으면 증분 모드: 모든 종목의 최근 60일만 다시 받아 덧붙임
+INCR = BACK and bool(done) and all(c in done for c in U if cm.get(c))
+cut400 = (today - datetime.timedelta(days=400)).strftime('%Y%m%d')
 bgn0 = '20190101'
 end = today.strftime('%Y%m%d')
 T0 = time.time(); LIMIT = float(os.environ.get('TIME_LIMIT', '6600'))
 calls = 0
 def dump():
-    save('data/dart_events.json', {'updated': datetime.datetime.utcnow().isoformat() + 'Z', 'source': 'DART 전자공시 OpenAPI (list.json)',
+    save(OUT, {'updated': datetime.datetime.utcnow().isoformat() + 'Z', 'source': 'DART 전자공시 OpenAPI (list.json)',
                                    'rules': [[k, lab, d] for k, lab, d, _ in RULES], 'events': ev,
-                                   'back_done': sorted(done), 'back_complete': all(c in done for c in U if cm.get(c))})
+                                   **({'back_done': sorted(done), 'back_complete': all(c in done for c in U if cm.get(c))} if BACK else {})})
 for n, c in enumerate(U):
     cc = cm.get(c)
     if not cc: continue
-    if BACK and c in done: continue
+    if BACK and c in done and not INCR: continue
     if BACK and time.time() - T0 > LIMIT: print('time limit, stop at', n); break
-    bgn = bgn0 if BACK else (today - datetime.timedelta(days=40)).strftime('%Y%m%d')
+    bgn = bgn0 if (BACK and c not in done) else (today - datetime.timedelta(days=60 if BACK else 40)).strftime('%Y%m%d')
     got = {e['no']: e for e in ev.get(c, [])}
     page = 1; ok = True
     while True:
@@ -57,7 +63,7 @@ for n, c in enumerate(U):
             if k: got[r['rcept_no']] = {'no': r['rcept_no'], 'd': r['rcept_dt'], 'k': k[0], 'nm': r['report_nm'].strip()[:60], 'dir': k[2]}
         if page >= int(j.get('total_page', 1)): break
         page += 1; time.sleep(0.1)
-    ev[c] = sorted(got.values(), key=lambda e: e['d'])
+    ev[c] = sorted((e for e in got.values() if BACK or e['d'] >= cut400), key=lambda e: e['d'])
     if BACK and ok: done.add(c)
     if BACK and n % 25 == 0: dump(); print('progress', n, len(done), 'calls', calls, int(time.time() - T0), 's', flush=True)
     if not ok and j.get('status') == '020': break

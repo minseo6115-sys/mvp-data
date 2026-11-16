@@ -14,6 +14,7 @@ jobs:
     timeout-minutes: 280
     steps:
       - uses: actions/checkout@v4
+        with: {ref: main}   # 대기 후 시작해도 항상 최신 데이터에서 출발
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
       - run: python scripts/collect_flow.py 2>&1 | tail -c 4000 | tee data/_log_flow.txt

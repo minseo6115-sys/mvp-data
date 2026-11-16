@@ -15,6 +15,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+        with: {ref: main}   # 대기 후 시작해도 항상 최신 데이터에서 출발
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
       - name: macro (ECOS, KDI EPU)

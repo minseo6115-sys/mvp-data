@@ -15,6 +15,7 @@ jobs:
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
+        with: {ref: main}   # 대기 후 시작해도 항상 최신 데이터에서 출발
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
       - name: financial statements
@@ -38,4 +39,4 @@ jobs:
         if: always()
         env: {GH_TOKEN: '${{ github.token }}'}
         run: |
-          if python -c "import json,sys;sys.exit(0 if json.load(open('data/dart_events.json')).get('back_complete') else 1)"; then echo complete; else gh workflow run backfill.yml --ref main; fi
+          if python -c "import json,sys;sys.exit(0 if json.load(open('data/dart_events_hist.json')).get('back_complete') else 1)"; then echo complete; else gh workflow run backfill.yml --ref main; fi
