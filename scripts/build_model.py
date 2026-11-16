@@ -148,7 +148,7 @@ for c in sorted(uni, key=lambda c: rank[c]):
     stocks.append({
         'code': c, 'name': meta.Name.get(c), 'market': meta.Market.get(c), 'rank': int(rank[c]), 'score': rnd(score[c], 3),
         'close': rnd(px[c].iloc[-1], 0), 'mcap': rnd(capt[c] / 1e8, 0),
-        'z': {k2: rnd(Z[k2][c], 2) for k2 in Z},
+        'z': {k2: rnd(Z[k2][c], 4) for k2 in Z},
         'hi52': rnd(F.HI52[c]), 'hiDate': hi_date[c].strftime('%Y-%m-%d') if c in hi_date and pd.notna(hi_date[c]) else None,
         'sue': rnd(F.SUE[c], 5), 'sueInfo': sue_info.get(c), 'bb': int(F.BB.fillna(0)[c]), 'ivol': rnd(ivol.get(c), 5),
         'events': evs.get(c, []), 'news': (news.get(c) or {}).get('hits', [])[:6], 'flow': flow.get(c),
