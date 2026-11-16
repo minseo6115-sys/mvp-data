@@ -5,7 +5,7 @@ on:
     - cron: '40 9 * * 1-5'    # 평일 18:40 KST (장 마감 후 공시·지수)
   workflow_dispatch:
   push:
-    paths: ['scripts/collect_macro.py', 'scripts/collect_events.py', 'scripts/collect_fin.py', 'scripts/build_model.py', 'scripts/common.py', '.github/workflows/daily.yml']
+    paths: ['scripts/collect_macro.py', 'scripts/collect_events.py', 'scripts/collect_fin.py', 'scripts/build_model.py', 'scripts/collect_company.py', 'scripts/common.py', '.github/workflows/daily.yml']
 permissions:
   contents: write
 concurrency: {group: data-commit, cancel-in-progress: false}
@@ -28,6 +28,10 @@ jobs:
         continue-on-error: true
       - name: financial statements (최근 2개 연도 증분 — 실적 시즌에 새 분기보고서를 바로 반영)
         run: python scripts/collect_fin.py 2>&1 | tail -c 4000 | tee data/_log_fin.txt
+        env: {DART_API_KEY: '${{ secrets.DART_API_KEY }}', ECOS_API_KEY: '${{ secrets.ECOS_API_KEY }}', PYTHONPATH: scripts}
+        continue-on-error: true
+      - name: company profile (업종·대표이사)
+        run: python scripts/collect_company.py 2>&1 | tail -c 2000 | tee data/_log_company.txt
         env: {DART_API_KEY: '${{ secrets.DART_API_KEY }}', ECOS_API_KEY: '${{ secrets.ECOS_API_KEY }}', PYTHONPATH: scripts}
         continue-on-error: true
       - name: model (오늘 기준 추천 점수)
