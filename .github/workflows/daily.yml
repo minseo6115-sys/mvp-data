@@ -5,7 +5,7 @@ on:
     - cron: '40 9 * * 1-5'    # 평일 18:40 KST (장 마감 후 공시·지수)
   workflow_dispatch:
   push:
-    paths: ['scripts/collect_macro.py', 'scripts/collect_events.py', 'scripts/common.py', '.github/workflows/daily.yml']
+    paths: ['scripts/collect_macro.py', 'scripts/collect_events.py', 'scripts/collect_fin.py', 'scripts/build_model.py', 'scripts/common.py', '.github/workflows/daily.yml']
 permissions:
   contents: write
 concurrency: {group: data-commit, cancel-in-progress: false}
@@ -26,12 +26,22 @@ jobs:
         run: python scripts/collect_events.py 2>&1 | tail -c 4000 | tee data/_log_events.txt
         env: {DART_API_KEY: '${{ secrets.DART_API_KEY }}', ECOS_API_KEY: '${{ secrets.ECOS_API_KEY }}', PYTHONPATH: scripts}
         continue-on-error: true
+      - name: financial statements (최근 2개 연도 증분 — 실적 시즌에 새 분기보고서를 바로 반영)
+        run: python scripts/collect_fin.py 2>&1 | tail -c 4000 | tee data/_log_fin.txt
+        env: {DART_API_KEY: '${{ secrets.DART_API_KEY }}', ECOS_API_KEY: '${{ secrets.ECOS_API_KEY }}', PYTHONPATH: scripts}
+        continue-on-error: true
+      - name: model (오늘 기준 추천 점수)
+        run: |
+          pip install -q pandas pyarrow numpy
+          python scripts/build_model.py 2>&1 | tail -c 4000 | tee data/_log_model.txt
+        env: {DART_API_KEY: '${{ secrets.DART_API_KEY }}', ECOS_API_KEY: '${{ secrets.ECOS_API_KEY }}', PYTHONPATH: scripts}
+        continue-on-error: true
       - name: commit
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git add data
+          git add data universe.json
           git commit -m "data: daily $(date -u +%Y-%m-%dT%H:%MZ)" || exit 0
           git pull --rebase -X theirs origin main || true
           git push

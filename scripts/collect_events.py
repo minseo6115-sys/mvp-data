@@ -82,7 +82,9 @@ NEWS = [
 ]
 CUR = [s['code'] for s in json.load(open('universe.json'))['codes']][:]
 cur110 = set(load('current110.json', []) or [])
-targets = [c for c in CUR if (not cur110) or c in cur110]
+# 뉴스 대상: 추천 모델의 현재 유니버스(시총 상위 150, 전날 계산된 model.json) + 기존 110종목
+mdl = [x['code'] for x in (load('data/model.json', {}) or {}).get('stocks', [])]
+targets = list(dict.fromkeys(mdl + [c for c in CUR if (not cur110) or c in cur110]))
 news = {}
 for c in targets:
     nm = NM.get(c, '')
