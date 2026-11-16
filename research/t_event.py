@@ -7,15 +7,17 @@ df['Date']=pd.to_datetime(df.Date); df=df[df.Date>='2018-10-01']
 ret=df.pivot_table(index='Date',columns='Code',values='ChangesRatio')/100
 k=pd.Series({pd.Timestamp(d):v for d,v in json.load(open('/home/claude/mvp-data/data/ecos.json'))['kospi']}).sort_index()
 mkt=k.pct_change().reindex(ret.index)
-ab=ret.sub(mkt,axis=0).clip(-0.31,0.31)
-E=json.load(open('/home/claude/mvp-data/data/dart_events.json'))
+U=[u['code'] for u in json.load(open('/home/claude/mvp-data/universe.json'))['codes']]
+ew=ret[[c for c in U if c in ret.columns]].clip(-0.3,0.3).mean(axis=1)   # 비교 기준: 수집 유니버스(시총 상위 150 이력 336종목) 동일가중
+BM=__import__('os').environ.get('BM','ew'); ab=ret.sub(ew if BM=='ew' else mkt,axis=0).clip(-0.31,0.31)
+E=json.load(open('/home/claude/mvp-data/data/dart_events_hist.json'))
 W={'사전[-5,-1]':(-5,-1),'반응[0,+1]':(0,1),'표류[+2,+20]':(2,20),'표류[+2,+60]':(2,60)}
 idx=ab.index; rows=[]
 for c,evs in E['events'].items():
     if c not in ab.columns: continue
     a=ab[c].values; seen=set()
     for e in evs:
-        if 'nm' in e and '정정' in e['nm']: continue
+        if e['nm'].startswith('[') or '자회사' in e['nm'] or '종속회사' in e['nm']: continue   # 회사 자신의 최초 공시만
         d=pd.Timestamp(e['d']); key=(e['k'],e['d'])
         if key in seen: continue
         seen.add(key); p=idx.searchsorted(d)
@@ -35,4 +37,4 @@ T=pd.DataFrame(out).sort_values('건수',ascending=False)
 print(T.to_string(index=False))
 X.to_pickle('events_car.pkl')
 summ={r['공시']:{**{w:r[w] for w in W},'n':int(r['건수'])} for r in out}
-json.dump({'windows':list(W),'note':'KOSPI 조정 CAR, 괄호=t','table':summ},open('event_study.json','w'),ensure_ascii=False,indent=1)
+json.dump({'windows':list(W),'note':'유니버스 동일가중 조정 CAR(회사 자신의 최초 공시만), 괄호=t','table':summ},open('event_study.json','w'),ensure_ascii=False,indent=1)

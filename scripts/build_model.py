@@ -113,10 +113,12 @@ for c in uni:
     got = {e['no']: e for e in hist.get(c, [])}
     for e in rec.get(c, []): got[e['no']] = e
     L = [e for e in got.values() if known(pd.Timestamp(e['d']))]
+    for e in L: e['sub'] = ('자회사' in e['nm']) or ('종속회사' in e['nm']); e['amend'] = e['nm'].startswith('[')
+    own = [e for e in L if not e['sub'] and not e['amend']]   # 회사 자신의 최초 공시만 점수·경고에 사용(자회사 공시·정정·연장 제외)
     d180 = (t - pd.Timedelta(days=180)).strftime('%Y%m%d'); d365 = (t - pd.Timedelta(days=365)).strftime('%Y%m%d')
-    bbs = [e for e in L if e['k'] in ('buyback', 'cancel') and e['d'] > d180]
+    bbs = [e for e in own if e['k'] in ('buyback', 'cancel') and e['d'] > d180]
     bb[c] = len(bbs)
-    evs[c] = [{'d': e['d'], 'k': e['k'], 'nm': e['nm'], 'no': e['no']} for e in sorted(L, key=lambda e: e['d'], reverse=True)
+    evs[c] = [{'d': e['d'], 'k': e['k'], 'nm': e['nm'], 'no': e['no']} for e in sorted(own, key=lambda e: e['d'], reverse=True)
               if e['d'] > d365 and e['k'] != 'earn'][:12]
 bb = pd.Series(bb, dtype=float)
 

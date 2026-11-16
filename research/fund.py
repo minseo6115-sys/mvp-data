@@ -59,7 +59,9 @@ def ffacs(c,t):
 def efacs(c,t):
     e=ev.get(c,[]); o={}
     if not e: return {k:0 for k in ('EV_ISSUE','EV_BAD','EV_BUYBACK','EV_CONTRACT','EV_OWNER')}
-    df=pd.DataFrame(e); df['d']=pd.to_datetime(df.d,format='%Y%m%d'); df=df[df.d<t]   # 엄격: 당일 공시 제외
+    df=pd.DataFrame(e); df=df[~df.nm.str.contains('자회사|종속회사')&~df.nm.str.startswith('[')]   # 회사 자신의 최초 공시만(자회사 공시·정정·연장 제외)
+    if df.empty: return {k:0 for k in ('EV_ISSUE','EV_BAD','EV_BUYBACK','EV_CONTRACT','EV_OWNER')}
+    df['d']=pd.to_datetime(df.d,format='%Y%m%d'); df=df[df.d<t]   # 엄격: 당일 공시 제외
     def cnt(keys,days): return int(((df.k.isin(keys))&(df.d>t-pd.Timedelta(days=days))).sum())
     o['EV_ISSUE']=-cnt(['rights','cb'],365)
     o['EV_BAD']=-cnt(['embezzle','audit','halt','lawsuit'],365)
