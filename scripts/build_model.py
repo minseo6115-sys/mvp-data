@@ -58,7 +58,7 @@ hi52 = adj.iloc[-1] / adj.max()
 hi_date = adj.idxmax()
 
 # ---- 요인 4(약세 국면용): 고유변동성 = 시장모형 잔차의 최근 60일 표준편차
-ivol = {}
+ivol = {}; risk = {}
 r = ret[uni].iloc[-252:]; m = mkt.iloc[-252:]
 for c in uni:
     y = r[c].values; ok = ~np.isnan(y) & ~np.isnan(m.values)
@@ -66,6 +66,19 @@ for c in uni:
     X = np.c_[np.ones(ok.sum()), m.values[ok]]
     b = np.linalg.lstsq(X, y[ok], rcond=None)[0]; e = y[ok] - X @ b
     ivol[c] = float(np.std(e[-60:], ddof=1))
+    # 급락·점프 위험(점수에는 넣지 않고 경고·비중 조절용): Chen-Hong-Stein(2001) NCSKEW·DUVOL, Jiang-Yao(2013)식 점프
+    es = pd.Series(e, index=m.index[ok]); w = np.log1p(es).groupby(es.index.to_period('W')).sum(); w = w - w.mean(); n = len(w)
+    rk = {}
+    if n >= 40 and (w ** 2).sum() > 0:
+        rk['ncskew'] = float(-(n * (n - 1) ** 1.5 * (w ** 3).sum()) / ((n - 1) * (n - 2) * ((w ** 2).sum()) ** 1.5))
+        up = w[w > 0]; dn = w[w < 0]
+        if len(up) > 2 and len(dn) > 2 and (up ** 2).sum() > 0: rk['duvol'] = float(np.log(((len(up) - 1) * (dn ** 2).sum()) / ((len(dn) - 1) * (up ** 2).sum())))
+    sd = es.rolling(60, min_periods=40).std().shift(1); zz = (es / sd).iloc[-126:]
+    rk['jumpDn'] = int((zz < -3).sum()); rk['jumpUp'] = int((zz > 3).sum())
+    jd = zz[zz.abs() > 3]; rk['jumpDays'] = [[d.strftime('%Y-%m-%d'), round(float(ret[c].get(d, np.nan)) * 100, 1)] for d in jd.index[-6:]]
+    a1 = adj[c].dropna(); rk['mdd1y'] = float((a1 / a1.cummax() - 1).min()) if len(a1) else None
+    yy = ret[c].iloc[-252:]; rk['worst'] = [yy.idxmin().strftime('%Y-%m-%d'), round(float(yy.min()) * 100, 1)] if yy.notna().any() else None
+    rk['vol'] = float(yy.std() * np.sqrt(252)); risk[c] = rk
 ivol = pd.Series(ivol)
 
 # ---- 요인 2: 실적 서프라이즈 = (이번 분기 영업이익 − 전년 같은 분기 영업이익) / 시가총액. 접수일 기준 시점정보
@@ -153,6 +166,7 @@ for c in sorted(uni, key=lambda c: rank[c]):
         'z': {k2: rnd(Z[k2][c], 4) for k2 in Z},
         'hi52': rnd(F.HI52[c]), 'hiDate': hi_date[c].strftime('%Y-%m-%d') if c in hi_date and pd.notna(hi_date[c]) else None,
         'sue': rnd(F.SUE[c], 5), 'sueInfo': sue_info.get(c), 'bb': int(F.BB.fillna(0)[c]), 'ivol': rnd(ivol.get(c), 5),
+        'risk': {k2: (rnd(v2, 3) if isinstance(v2, float) else v2) for k2, v2 in (risk.get(c) or {}).items()},
         'events': evs.get(c, []), 'news': (news.get(c) or {}).get('hits', [])[:6], 'flow': flow.get(c),
     })
 
