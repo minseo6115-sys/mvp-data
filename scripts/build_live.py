@@ -1,7 +1,7 @@
 """매일: 앱이 한 번에 받아가는 data/app_live.json 생성.
 - model: 오늘 기준 추천 점수(build_model.py 결과)
 - vix: CBOE VIX 일별 종가(2023~), 실패하면 FRED VIXCLS
-- dxy: 달러인덱스(ICE 공식 가중치로 직접 계산)와 원/달러, 주간(금요일) — currency-api 날짜별 스냅샷, 증분 저장(data/dxy.json)
+- dxy: 달러인덱스(ICE 공식 가중치로 직접 계산)와 원/달러, 주간(금요일) — ECB 기준환율(Frankfurter API)
 - idx: 한국은행 공식 KOSPI·KOSDAQ 지수(일별), 기준금리(일별), 소비자물가(월별), KDI 경제정책불확실성(월별)
 앱은 열 때 이 파일을 받아 내장 스냅샷을 최신 값으로 덮어쓴다."""
 import json, datetime, csv, io, math, os
@@ -31,32 +31,27 @@ if vix: save('data/vix.json', {'updated': out['updated'], 'source': out['log']['
 else: vix = (load('data/vix.json', {}) or {}).get('vix', [])
 out['vix'] = vix
 
-# ---- DXY (주간, 금요일 스냅샷)
-W = {'eur': -0.576, 'jpy': 0.136, 'gbp': -0.119, 'cad': 0.091, 'sek': 0.042, 'chf': 0.036}
+# ---- DXY (주간, 금요일) — ECB 기준환율(Frankfurter API, 한 번에 기간 조회), 실패하면 기존 파일 유지
+W = {'EUR': -0.576, 'JPY': 0.136, 'GBP': -0.119, 'CAD': 0.091, 'SEK': 0.042, 'CHF': 0.036}
 old = (load('data/dxy.json', {}) or {}).get('dxy', [])
-have = {r[0] for r in old}
-d = datetime.date(2023, 1, 6)
-fridays = []
-while d <= today and not os.environ.get('NONET'):
-    fridays.append(d); d += datetime.timedelta(days=7)
-calls = 0; miss = 0
-for f in fridays:
-    if miss >= 5: break   # 연속 실패면 다음 실행에 다시 시도
-    ds = f.isoformat()
-    if ds in have: continue
-    if calls >= 200: break
-    u = None
-    for url in (f'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@{ds}/v1/currencies/usd.min.json',
-                f'https://{ds}.currency-api.pages.dev/v1/currencies/usd.min.json'):
-        try: u = json.loads(get(url, timeout=20, tries=2))['usd']; break
-        except Exception: u = None
-    calls += 1; miss = 0 if u else miss + 1
-    if not u or not all(u.get(k) for k in W) or not u.get('krw'): continue
-    dxy = 50.14348112 * math.prod((1 / u[k] if k in ('eur', 'gbp') else u[k]) ** w for k, w in W.items())
-    old.append([ds, round(dxy, 3), round(u['krw'], 2)])
-old.sort()
-save('data/dxy.json', {'updated': out['updated'], 'source': 'currency-api 날짜별 스냅샷, ICE 공식 가중치로 계산', 'dxy': old})
-out['dxy'] = old; out['log']['dxy'] = f'{len(old)}주, 이번 호출 {calls}'
+try:
+    if os.environ.get('NONET'): raise RuntimeError('nonet')
+    j = json.loads(get('https://api.frankfurter.app/2023-01-01..?base=USD&symbols=EUR,JPY,GBP,CAD,SEK,CHF,KRW', timeout=40, tries=3))
+    days = sorted(j['rates'].items()); wk = {}
+    for ds, u in days:
+        if not all(u.get(k) for k in W) or not u.get('KRW'): continue
+        f = datetime.date.fromisoformat(ds); f += datetime.timedelta(days=(4 - f.weekday()) % 7)
+        wk[f.isoformat()] = (ds, u)   # 그 주의 마지막 영업일 값
+    rows = []
+    for f, (ds, u) in sorted(wk.items()):
+        dxy = 50.14348112 * math.prod((1 / u[k] if k in ('EUR', 'GBP') else u[k]) ** w for k, w in W.items())
+        rows.append([f, round(dxy, 3), round(u['KRW'], 2)])
+    if len(rows) > 50: old = rows
+    out['log']['dxy'] = f'Frankfurter(ECB) {len(rows)}주'
+except Exception as e:
+    out['log']['dxy'] = f'fail {type(e).__name__}, 기존 {len(old)}주 유지'
+save('data/dxy.json', {'updated': out['updated'], 'source': 'ECB 기준환율(Frankfurter API), ICE 공식 가중치로 계산', 'dxy': old})
+out['dxy'] = old
 
 # ---- 한국은행·KDI
 ec = load('data/ecos.json', {}) or {}
