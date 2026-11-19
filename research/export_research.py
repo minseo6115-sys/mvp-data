@@ -31,9 +31,9 @@ for i,(t,(F,fwd)) in enumerate(P.items()):
     ok=fwd.reindex(F.index).notna(); idx=F.index[ok]
     Z={'h':zr(num(F,'HI52')).fillna(0),'s':zr(num(F,'SUE_OP')).fillna(0),'b':zr(num(F,'EV_BUYBACK').fillna(0)),'v':zr(num(F,'IVOL')).fillna(0)}
     w=cap.loc[:t].iloc[-1].reindex(idx); w=w/w.sum()
-    rows.append({'t':t,'bear':bear(t),'kospi':round(float(D.kospi.iloc[i]),5),'c':list(idx),**{kk:[round(float(x),2) for x in Z[kk][idx]] for kk in Z},
+    rows.append({'t':t,'bear':bear(t),'kospi':round(float(D.kospi.iloc[i]),5),'c':list(idx),**{kk:[round(float(x),4) for x in Z[kk][idx]] for kk in Z},
                  'f':[round(float(x),4) for x in fwd[idx]],'w':[round(float(x),4) for x in w]})
 json.dump({'note':'t=종목 선정일(월말). h=52주 고가, s=실적 서프라이즈, b=자사주, v=저변동성의 순위 z. f=다음 달 수익률, w=시총 비중','months':rows},open(f'{R}/panel.json','w'),ensure_ascii=False,separators=(',',':'))
-shutil.copy('event_study.json',f'{R}/event_study.json')
-for f in ['harness.py','factors.py','fund.py','t_52w.py','t_flow.py','t_final.py','t_event.py','t_evfac.py','t_evcombo.py','t_regime.py','t_robust.py','ml.py','fx_paper.py','fx_paper.json','export_research.py']: shutil.copy(f,f'{R}/{f}')
+pass
+for f in ['harness.py','factors.py','fund.py','t_52w.py','t_flow.py','t_final.py','t_event.py','t_evfac.py','t_evcombo.py','t_regime.py','t_robust.py','ml.py','fx_paper.py','export_research.py']: shutil.copy(f,f'{R}/{f}')
 print(out['stats']['model'],out['excess'],{b:(boot[b]['ci95'],boot[b]['p_pos']) for b in boot}, os.path.getsize(f'{R}/panel.json')//1024,'KB')

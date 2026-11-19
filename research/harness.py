@@ -9,7 +9,7 @@ def nwt(x,L=3):
     return m/np.sqrt(v/n) if v>0 else np.nan
 def ann(r): r=pd.Series(r); return (1+r).prod()**(12/len(r))-1
 def sharpe(r,rf=.028): r=pd.Series(r); return (ann(r)-rf)/(r.std()*np.sqrt(12))
-def mdd(r): e=(1+pd.Series(r)).cumprod(); return (e/e.cummax()-1).min()
+def mdd(r): e=pd.concat([pd.Series([1.0]),(1+pd.Series(r).reset_index(drop=True)).cumprod()]); return (e/e.cummax()-1).min()   # 시작 원금을 고점에 포함
 def evaluate(P, score, n=15, cost=0.003, name='', verbose=True, buffer=None):
     """P: {t:(F,fwd)}; score(F,t)->Series. buffer: 보유종목은 순위 buffer 이내면 유지."""
     rows=[]; prev=[]
