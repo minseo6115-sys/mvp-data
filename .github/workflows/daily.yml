@@ -12,29 +12,34 @@ concurrency: {group: data-commit, cancel-in-progress: false}
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with: {ref: main}   # 대기 후 시작해도 항상 최신 데이터에서 출발
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
       - name: macro (ECOS, KDI EPU)
+        timeout-minutes: 8
         run: python scripts/collect_macro.py 2>&1 | tail -c 4000 | tee data/_log_macro.txt
         env: {DART_API_KEY: '${{ secrets.DART_API_KEY }}', ECOS_API_KEY: '${{ secrets.ECOS_API_KEY }}', PYTHONPATH: scripts}
         continue-on-error: true
       - name: events (DART 공시, 뉴스)
+        timeout-minutes: 20
         run: python scripts/collect_events.py 2>&1 | tail -c 4000 | tee data/_log_events.txt
         env: {DART_API_KEY: '${{ secrets.DART_API_KEY }}', ECOS_API_KEY: '${{ secrets.ECOS_API_KEY }}', PYTHONPATH: scripts}
         continue-on-error: true
       - name: financial statements (최근 2개 연도 증분 — 실적 시즌에 새 분기보고서를 바로 반영)
+        timeout-minutes: 10
         run: python scripts/collect_fin.py 2>&1 | tail -c 4000 | tee data/_log_fin.txt
         env: {DART_API_KEY: '${{ secrets.DART_API_KEY }}', ECOS_API_KEY: '${{ secrets.ECOS_API_KEY }}', PYTHONPATH: scripts}
         continue-on-error: true
       - name: company profile (업종·대표이사)
+        timeout-minutes: 5
         run: python scripts/collect_company.py 2>&1 | tail -c 2000 | tee data/_log_company.txt
         env: {DART_API_KEY: '${{ secrets.DART_API_KEY }}', ECOS_API_KEY: '${{ secrets.ECOS_API_KEY }}', PYTHONPATH: scripts}
         continue-on-error: true
       - name: model (오늘 기준 추천 점수)
+        timeout-minutes: 10
         run: |
           pip install -q pandas pyarrow numpy
           python scripts/build_model.py 2>&1 | tail -c 4000 | tee data/_log_model.txt
