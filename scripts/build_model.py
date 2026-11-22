@@ -135,6 +135,29 @@ for c in uni:
               if e['d'] > d365 and e['k'] != 'earn'][:12]
 bb = pd.Series(bb, dtype=float)
 
+# ---- 다음 달 급락 확률 (research/t_crash.py에서 검증: 다음 달 중 하루라도 −10% 이하 급락할 확률, 표본외 AUC 0.75)
+# 6개 변수를 그달 유니버스 안에서 표준화(±3 절단)해 로지스틱 계수를 곱한다. 계수는 2020~2026 전체 표본 추정치(고정).
+crash = {}
+try:
+    CT = load('research/crash_tests.json', {}) or {}
+    if CT.get('coef'):
+        i = len(ret.index) - 1
+        r1 = ret[uni].iloc[-252:]
+        tov = (amt / cap)[uni]
+        V = pd.DataFrame({
+            'LTR': -r1.quantile(.01),
+            'NCSKEW': pd.Series({c: (risk.get(c) or {}).get('ncskew', np.nan) for c in uni}),
+            'NEGJUMP': pd.Series({c: (risk.get(c) or {}).get('jumpDn', np.nan) for c in uni}, dtype=float),
+            'IVOL': ivol.reindex(uni),
+            'DTURN': tov.iloc[-126:].mean() - tov.iloc[-378:-126].mean(),
+            'RET12': (1 + ret[uni].iloc[-252:].fillna(0)).prod() - 1})
+        Zc = ((V - V.mean()) / V.std()).clip(-3, 3).fillna(0)
+        lin = CT['intercept'] + sum(CT['coef'][k] * Zc[k] for k in CT['coef'])
+        crash = (1 / (1 + np.exp(-lin))).to_dict()
+        crash_base = CT.get('rate')
+except Exception as e:
+    print('crash prob fail', repr(e)[:120])
+
 # ---- 점수
 F = pd.DataFrame({'HI52': hi52, 'SUE': sue, 'BB': bb, 'IVOL': -ivol}).reindex(uni)
 Z = pd.DataFrame({'HI52': zr(F.HI52).fillna(0), 'SUE': zr(F.SUE).fillna(0), 'BB': zr(F.BB.fillna(0)), 'IVOL': zr(F.IVOL).fillna(0)})
@@ -167,6 +190,7 @@ for c in sorted(uni, key=lambda c: rank[c]):
         'hi52': rnd(F.HI52[c]), 'hiDate': hi_date[c].strftime('%Y-%m-%d') if c in hi_date and pd.notna(hi_date[c]) else None,
         'sue': rnd(F.SUE[c], 5), 'sueInfo': sue_info.get(c), 'bb': int(F.BB.fillna(0)[c]), 'ivol': rnd(ivol.get(c), 5),
         'risk': {k2: (rnd(v2, 3) if isinstance(v2, float) else v2) for k2, v2 in (risk.get(c) or {}).items()},
+        'crashP': rnd(crash.get(c), 3),
         'events': evs.get(c, []), 'news': (news.get(c) or {}).get('hits', [])[:6], 'flow': flow.get(c),
     })
 
@@ -177,6 +201,7 @@ out = {
     'regime': {'bear': bear, 'kospi': rnd(mm.iloc[-1], 2), 'ma10': rnd(ma10.iloc[-1], 2),
                'hist': [[str(p), rnd(v, 2), rnd(a, 2)] for p, v, a in zip(mm.index[-36:], mm.values[-36:], ma10.values[-36:])]},
     'universe': {'n': len(uni), 'rule': f'시가총액 상위 {N_UNI} · 20일 평균 거래대금 50억원 이상 · 최근 252일 중 200일 이상 거래'},
+    'crash': ({'base': (load('research/crash_tests.json', {}) or {}).get('rate'), 'auc': (load('research/crash_tests.json', {}) or {}).get('auc'), 'top': (load('research/crash_tests.json', {}) or {}).get('top'), 'bot': (load('research/crash_tests.json', {}) or {}).get('bot'), 'p80': rnd(float(np.percentile(list(crash.values()), 80)), 3) if crash else None}),
     'coverage': {'sue': int(F.SUE.notna().sum()), 'bb': int((F.BB > 0).sum()), 'flow': len(flow)},
     'rules': RULE, 'stocks': stocks,
 }
