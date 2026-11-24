@@ -1,3 +1,3 @@
-long {'usdkrw': 4173, 'kospi': 4157, 'ktb3y': 4173, 'frgn_kospi': 4157, 'policy_KR': 202, 'policy_US': 202, 'cpi_KR': 202, 'cpi_US': 201}
+long {'usdkrw': 4174, 'kospi': 4157, 'ktb3y': 4173, 'frgn_kospi': 4157, 'policy_KR': 202, 'policy_US': 202, 'cpi_KR': 202, 'cpi_US': 201}
 ecos {'bok_rate_m': (106, ['202610', 3.0]), 'bok_rate_d': (690, ['20261121', 3.0]), 'cpi_kr_m': (118, ['202610', 120.73]), 'kospi': (2181, ['20261123', 4708.54]), 'kosdaq': (2181, ['20261123', 635.45]), 'frgn_kospi': (2181, ['20261123', -2395.0]), 'frgn_kosdaq': (2181, ['20261123', -340.0])} epu [['202609', 112.17], ['202610', 102.88]]
-vkospi None 0 []
+vkospi failed <HTTPError 403: 'Forbidden'>
