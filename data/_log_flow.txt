@@ -1,15 +1,15 @@
 progress 0 000060 817 calls 1 fails 0 0 s
-progress 25 003000 1734 calls 26 fails 0 16 s
-progress 50 005850 1734 calls 51 fails 0 32 s
-progress 75 009420 1734 calls 76 fails 0 46 s
-progress 100 016360 1734 calls 101 fails 0 62 s
-progress 125 029780 1734 calls 126 fails 0 77 s
-progress 150 036930 1734 calls 151 fails 0 93 s
-progress 175 064350 1734 calls 176 fails 0 108 s
-progress 200 082740 1734 calls 201 fails 0 124 s
-progress 225 105560 1734 calls 226 fails 0 140 s
-progress 250 181710 1734 calls 251 fails 0 155 s
-progress 275 263750 1734 calls 276 fails 0 170 s
-progress 300 319660 1734 calls 301 fails 0 185 s
-progress 325 425420 982 calls 326 fails 0 201 s
-flow calls 353 fails 0 stocks 338
+progress 25 003000 1735 calls 26 fails 0 16 s
+progress 50 005850 1735 calls 51 fails 0 31 s
+progress 75 009420 1735 calls 76 fails 0 45 s
+progress 100 016360 1735 calls 101 fails 0 60 s
+progress 125 029780 1735 calls 126 fails 0 76 s
+progress 150 036930 1735 calls 151 fails 0 91 s
+progress 175 064350 1735 calls 176 fails 0 107 s
+progress 200 082740 1735 calls 201 fails 0 121 s
+progress 225 105560 1735 calls 226 fails 0 137 s
+progress 250 181710 1735 calls 251 fails 0 152 s
+progress 275 263750 1735 calls 276 fails 0 168 s
+progress 300 319660 1735 calls 301 fails 0 182 s
+progress 325 425420 983 calls 326 fails 0 198 s
+flow calls 338 fails 0 stocks 338
